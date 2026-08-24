@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#152b26">
+  <title>Curso de Formação SEFA-PA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <span class="brand-mark">EF</span>
+        <div><strong>Curso de Formação SEFA-PA</strong></div>
+      </div>
+      <div class="menu-label">Cadernos</div>
+      <nav id="book-menu" aria-label="Cadernos por assunto"></nav>
+      <div class="sidebar-foot"><span id="global-progress">0</span> de 290 respondidas</div>
+    </aside>
+
+    <main>
+      <header class="topbar">
+        <button class="icon-button menu-toggle" id="menu-toggle" aria-label="Abrir menu">☰</button>
+        <div class="eyebrow">Banco de questões comentadas</div>
+        <button class="reset-button" id="reset-button">Reiniciar caderno</button>
+      </header>
+
+      <section class="hero">
+        <div>
+          <p class="kicker" id="book-kicker">Caderno</p>
+          <h1 id="book-title">Carregando…</h1>
+          <p id="book-summary"></p>
+        </div>
+        <div class="score-card">
+          <div class="score-ring" id="score-ring"><span id="score-value">0%</span></div>
+          <div><strong id="score-label">Comece agora</strong><small id="score-detail">Nenhuma resposta confirmada</small></div>
+        </div>
+      </section>
+
+      <section class="toolbar" aria-label="Filtros das questões">
+        <div class="filter-group" id="filters">
+          <button class="chip active" data-filter="all">Todas</button>
+          <button class="chip hot" data-filter="hot">⚠ Quentes</button>
+          <button class="chip emphasis" data-filter="emphasis">Ênfase em sala</button>
+          <button class="chip" data-filter="unanswered">Não respondidas</button>
+        </div>
+        <label class="select-wrap">Ir para
+          <select id="question-select" aria-label="Ir para uma questão"></select>
+        </label>
+      </section>
+
+      <section class="question-card" id="question-card" aria-live="polite">
+        <div class="question-meta">
+          <span id="question-number"></span><span class="dot">•</span><span id="question-section"></span>
+        </div>
+        <div class="badges" id="badges"></div>
+        <h2 id="question-title"></h2>
+        <p class="source-note" id="source-note"></p>
+        <div class="prompt" id="question-prompt"></div>
+        <fieldset id="options"><legend>Selecione uma alternativa</legend></fieldset>
+        <div class="question-actions">
+          <button class="nav-button" id="prev-button">← Anterior</button>
+          <button class="confirm-button" id="confirm-button" disabled>Confirmar resposta</button>
+          <button class="nav-button" id="next-button">Próxima →</button>
+        </div>
+        <div class="feedback" id="feedback" hidden></div>
+      </section>
+      <p class="empty-state" id="empty-state" hidden>Nenhuma questão corresponde a este filtro.</p>
+      <footer>Conteúdo preservado dos cadernos fornecidos · Seu progresso fica salvo neste navegador.</footer>
+    </main>
+  </div>
+  <div class="scrim" id="scrim"></div>
+  <script src="data/questions.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
