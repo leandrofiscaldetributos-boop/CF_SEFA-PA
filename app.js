@@ -40,6 +40,7 @@ function renderBook() {
   $("score-detail").textContent = done ? `${done} de ${book.questions.length} respondidas` : "Nenhuma resposta confirmada";
   const globalDone = Object.keys(state.progress).length;
   $("global-progress").textContent = globalDone;
+  $("global-total").textContent = data.total;
   $("question-select").innerHTML = state.visible.map((q, i) => `<option value="${i}" ${i === state.index ? "selected" : ""}>${q.number}. ${q.title}</option>`).join("");
 }
 
