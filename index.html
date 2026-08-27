@@ -35,13 +35,13 @@
           <h1 id="book-title">Carregando…</h1>
           <p id="book-summary"></p>
         </div>
-        <div class="score-card">
+        <div class="score-card" id="score-card">
           <div class="score-ring" id="score-ring"><span id="score-value">0%</span></div>
           <div><strong id="score-label">Comece agora</strong><small id="score-detail">Nenhuma resposta confirmada</small></div>
         </div>
       </section>
 
-      <section class="toolbar" aria-label="Filtros das questões">
+      <section class="toolbar" id="toolbar" aria-label="Filtros das questões">
         <div class="filter-group" id="filters">
           <button class="chip active" data-filter="all">Todas</button>
           <button class="chip hot" data-filter="hot">⚠ Quentes</button>
@@ -68,6 +68,21 @@
           <button class="nav-button" id="next-button">Próxima →</button>
         </div>
         <div class="feedback" id="feedback" hidden></div>
+      </section>
+      <section class="reader-card" id="reader-card" hidden>
+        <div class="reader-toolbar">
+          <span id="reader-page-label">Página 1</span>
+          <label>Ir para
+            <select id="reader-select" aria-label="Ir para uma página"></select>
+          </label>
+        </div>
+        <figure class="reader-page">
+          <img id="reader-image" alt="Página do caderno RESUMASSO — só o mel">
+        </figure>
+        <div class="reader-actions">
+          <button class="nav-button" id="reader-prev">← Página anterior</button>
+          <button class="nav-button" id="reader-next">Próxima página →</button>
+        </div>
       </section>
       <p class="empty-state" id="empty-state" hidden>Nenhuma questão corresponde a este filtro.</p>
       <footer>Conteúdo preservado dos cadernos fornecidos · Seu progresso fica salvo neste navegador.</footer>

@@ -1,6 +1,6 @@
 const data = window.QUIZ_DATA;
 const saved = JSON.parse(localStorage.getItem("estudo-focado-progress") || "{}");
-const state = { book: 0, filter: "all", visible: [], index: 0, selected: null, progress: saved };
+const state = { book: 0, filter: "all", visible: [], index: 0, readerIndex: 0, selected: null, progress: saved };
 const $ = (id) => document.getElementById(id);
 
 function save() { localStorage.setItem("estudo-focado-progress", JSON.stringify(state.progress)); }
@@ -10,41 +10,65 @@ function answerFor(q) { return state.progress[q.id]; }
 function paragraphs(text) { return text.replaceAll("\n\n", "<br><br>"); }
 
 function buildMenu() {
-  $("book-menu").innerHTML = data.books.map((b, i) => `<button class="book-button ${i === state.book ? "active" : ""}" data-book="${i}"><span>${b.title}</span><small>${b.questions.length}</small></button>`).join("");
+  $("book-menu").innerHTML = data.books.map((b, i) => {
+    const count = b.reader ? `${b.pages.length} págs.` : b.questions.length;
+    return `<button class="book-button ${i === state.book ? "active" : ""}" data-book="${i}"><span>${b.title}</span><small>${count}</small></button>`;
+  }).join("");
   document.querySelectorAll("[data-book]").forEach(btn => btn.onclick = () => selectBook(+btn.dataset.book));
 }
 
 function selectBook(i) {
-  state.book = i; state.index = 0; state.selected = null;
+  state.book = i; state.index = 0; state.readerIndex = 0; state.selected = null;
   applyFilter(); buildMenu(); closeMenu();
 }
 
 function applyFilter() {
   const book = currentBook();
+  if (book.reader) {
+    state.visible = [];
+    renderBook(); renderQuestion(); renderReader();
+    return;
+  }
   state.visible = book.questions.filter(q => state.filter === "all" || (state.filter === "hot" && q.hot) || (state.filter === "emphasis" && q.emphasis) || (state.filter === "unanswered" && !answerFor(q)));
   if (state.index >= state.visible.length) state.index = Math.max(0, state.visible.length - 1);
-  renderBook(); renderQuestion();
+  renderBook(); renderQuestion(); renderReader();
 }
 
 function renderBook() {
   const book = currentBook();
+  const isReader = !!book.reader;
+  $("score-card").hidden = isReader;
+  $("toolbar").hidden = isReader;
+  $("reset-button").hidden = isReader;
+  $("book-title").textContent = book.title;
+  const globalDone = Object.keys(state.progress).length;
+  $("global-progress").textContent = globalDone;
+  $("global-total").textContent = data.total;
+
+  if (isReader) {
+    $("book-kicker").textContent = `${book.pages.length} páginas · leitura visual`;
+    $("book-summary").textContent = "Navegue pelo material preservado diretamente do PDF original.";
+    return;
+  }
+
   const done = book.questions.filter(answerFor).length;
   const correct = book.questions.filter(q => answerFor(q)?.choice === q.answer).length;
   const pct = done ? Math.round(correct / done * 100) : 0;
-  $("book-title").textContent = book.title;
   $("book-kicker").textContent = `${book.questions.length} questões · ${new Set(book.questions.map(q => q.section)).size} blocos temáticos`;
   $("book-summary").textContent = "Responda no seu ritmo. O gabarito comentado permanece oculto até a confirmação.";
   $("score-value").textContent = `${pct}%`;
   $("score-ring").style.setProperty("--score", `${pct * 3.6}deg`);
   $("score-label").textContent = done ? `${correct} acerto${correct === 1 ? "" : "s"}` : "Comece agora";
   $("score-detail").textContent = done ? `${done} de ${book.questions.length} respondidas` : "Nenhuma resposta confirmada";
-  const globalDone = Object.keys(state.progress).length;
-  $("global-progress").textContent = globalDone;
-  $("global-total").textContent = data.total;
   $("question-select").innerHTML = state.visible.map((q, i) => `<option value="${i}" ${i === state.index ? "selected" : ""}>${q.number}. ${q.title}</option>`).join("");
 }
 
 function renderQuestion() {
+  if (currentBook().reader) {
+    $("question-card").hidden = true;
+    $("empty-state").hidden = true;
+    return;
+  }
   const q = currentQuestion();
   $("question-card").hidden = !q; $("empty-state").hidden = !!q;
   if (!q) return;
@@ -66,6 +90,27 @@ function renderQuestion() {
   $("next-button").disabled = state.index === state.visible.length - 1;
   renderFeedback(q, answered);
   $("question-select").value = state.index;
+}
+
+function renderReader() {
+  const book = currentBook();
+  const card = $("reader-card");
+  card.hidden = !book.reader;
+  if (!book.reader) return;
+  const page = book.pages[state.readerIndex];
+  $("reader-page-label").textContent = page.label;
+  $("reader-image").src = page.image;
+  $("reader-image").alt = `${book.title} — ${page.label}`;
+  $("reader-select").innerHTML = book.pages.map((item, index) => `<option value="${index}" ${index === state.readerIndex ? "selected" : ""}>${item.label}</option>`).join("");
+  $("reader-prev").disabled = state.readerIndex === 0;
+  $("reader-next").disabled = state.readerIndex === book.pages.length - 1;
+}
+
+function moveReader(delta) {
+  const pages = currentBook().pages;
+  state.readerIndex = Math.max(0, Math.min(pages.length - 1, state.readerIndex + delta));
+  renderReader();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function renderOptionSelection() {
@@ -95,6 +140,9 @@ document.querySelectorAll("[data-filter]").forEach(btn => btn.onclick = () => { 
 $("confirm-button").onclick = confirmAnswer;
 $("prev-button").onclick = () => move(-1); $("next-button").onclick = () => move(1);
 $("question-select").onchange = e => { state.index = +e.target.value; renderQuestion(); };
+$("reader-prev").onclick = () => moveReader(-1);
+$("reader-next").onclick = () => moveReader(1);
+$("reader-select").onchange = e => { state.readerIndex = +e.target.value; renderReader(); };
 $("reset-button").onclick = () => { if (confirm(`Apagar o progresso de ${currentBook().title}?`)) { currentBook().questions.forEach(q => delete state.progress[q.id]); save(); applyFilter(); } };
 $("menu-toggle").onclick = () => { $("sidebar").classList.add("open"); $("scrim").classList.add("open"); }; $("scrim").onclick = closeMenu;
 buildMenu(); applyFilter();
