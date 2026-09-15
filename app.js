@@ -1,5 +1,10 @@
 const data = window.QUIZ_DATA;
-const saved = JSON.parse(localStorage.getItem("estudo-focado-progress") || "{}");
+const validQuestionIds = new Set(data.books.flatMap(book => book.questions.map(question => question.id)));
+const storedProgress = JSON.parse(localStorage.getItem("estudo-focado-progress") || "{}");
+const saved = Object.fromEntries(Object.entries(storedProgress).filter(([id]) => validQuestionIds.has(id)));
+if (Object.keys(saved).length !== Object.keys(storedProgress).length) {
+  localStorage.setItem("estudo-focado-progress", JSON.stringify(saved));
+}
 const state = { book: 0, filter: "all", visible: [], index: 0, readerIndex: 0, selected: null, progress: saved };
 const $ = (id) => document.getElementById(id);
 
@@ -41,7 +46,7 @@ function renderBook() {
   $("toolbar").hidden = isReader;
   $("reset-button").hidden = isReader;
   $("book-title").textContent = book.title;
-  const globalDone = Object.keys(state.progress).length;
+  const globalDone = [...validQuestionIds].filter(id => state.progress[id]).length;
   $("global-progress").textContent = globalDone;
   $("global-total").textContent = data.total;
 
